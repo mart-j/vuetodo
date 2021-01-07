@@ -9,6 +9,23 @@
             <Button :type="'submit'" :label="add" />
           </div>
         </div>
+        <div class="undone">
+          <button @click="showUndone = !showUndone" type="button">
+            {{
+              showUndone && undoneTodos().length > 0
+                ? 'Hide undone'
+                : 'Show undone'
+            }}
+          </button>
+          <div
+            v-if="showUndone && undoneTodos().length > 0"
+            class="undoneTasks"
+          >
+            <div class="undoneTask" v-for="(todo, i) in undoneTodos()" :key="i">
+              {{ todo.title }}
+            </div>
+          </div>
+        </div>
         <div v-if="todos.length" class="todosWrapper">
           <div
             class="todoItemWraper"
@@ -22,9 +39,12 @@
                 @change="compleateTodo(i)"
                 type="checkbox"
               />
-              <span v-if="!editable" :class="{ done: compleated }">{{
-                title
-              }}</span>
+              <span
+                class="todoItem"
+                v-if="!editable"
+                :class="{ done: compleated }"
+                >{{ title }}</span
+              >
               <span class="editInputWrapper" v-else>
                 <input
                   class="editInput"
@@ -32,7 +52,7 @@
                   v-model="todos[i].editableValue"
                 />
                 <Button
-                  @click="
+                  @clickHandler="
                     (todos[i].editable = false),
                       (todos[i].editableValue = todos[i].title)
                   "
@@ -50,7 +70,7 @@
                 <Button v-else :label="save" />
               </div>
               <div v-if="!editable" class="remove">
-                <Button :label="remove" @click="removeTodo(i)" />
+                <Button :label="remove" @clickHandler="removeTodo(i)" />
               </div>
             </div>
           </div>
@@ -70,19 +90,22 @@ import remove from './assets/remove.png';
 import save from './assets/save.png';
 import Button from './components/button/Button.vue';
 
+type Todo = {
+  title: string;
+  compleated: boolean;
+  editable: boolean;
+  editableValue: string;
+};
+
 interface Data {
   inputValue: string;
-  todos: {
-    title: string;
-    compleated: boolean;
-    editable: boolean;
-    editableValue: string;
-  }[];
+  todos: Todo[];
   edit: string;
   edit2: string;
   remove: string;
   save: string;
   add: string;
+  showUndone: boolean;
 }
 
 export default defineComponent({
@@ -99,6 +122,7 @@ export default defineComponent({
       remove,
       save,
       add,
+      showUndone: false,
     };
   },
 
@@ -136,6 +160,9 @@ export default defineComponent({
         this.todos = newTodos;
       }
     },
+    undoneTodos(): Todo[] {
+      return this.todos.filter((todo) => !todo.compleated);
+    },
   },
 });
 </script>
@@ -155,6 +182,31 @@ export default defineComponent({
   margin-bottom: 20px;
 }
 
+.undone {
+  position: relative;
+}
+
+.undoneTasks {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-direction: column;
+  min-width: 400px;
+  font-size: 20px;
+  background-color: rgba(0, 0, 0, 0.842);
+  color: white;
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 0);
+  z-index: 2;
+  padding: 20px;
+}
+
+.undoneTask {
+  margin: 5px;
+  border-bottom: 1px solid white;
+}
+
 .checkbox {
   margin-right: 8px;
 }
@@ -167,11 +219,17 @@ export default defineComponent({
   border: none;
   border-bottom: 1px solid black;
   &:focus {
-   transform: scale(1.01);
+    transform: scale(1.01);
   }
 }
 .editInputWrapper {
   position: relative;
+}
+
+.todoItem {
+  word-break: break-all;
+
+  padding-right: 50px;
 }
 
 .cancelWrapper {

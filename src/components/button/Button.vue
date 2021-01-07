@@ -1,5 +1,5 @@
 <template>
-  <button class="button" :type="type">
+  <button @click="$emit('clickHandler')" class="button" :type="type">
     <img :src="label" width="25" />
   </button>
 </template>
@@ -11,7 +11,11 @@ export default defineComponent({
   name: 'Button',
   props: {
     label: { type: String, required: true },
-    type: { type: String, required: true },
+    type: {
+      type: String,
+      default: 'button',
+      validator: (prop: string) => typeof prop === typeof 'submit' || typeof prop === typeof 'button',
+    },
   },
 });
 </script>
